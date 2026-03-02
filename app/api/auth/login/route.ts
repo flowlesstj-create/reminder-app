@@ -16,7 +16,6 @@ type LoginBody = {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    await initDatabase();
 
     const body = (await request.json()) as LoginBody;
     const email = normalizeEmail(
@@ -60,7 +59,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     setSessionCookie(response, token, expiresAt);
     return response;
   } catch (error) {
-    console.error("Login failed", error);
+    // Do not log sensitive error details in production
     return NextResponse.json(
       { error: "Unable to login right now." },
       { status: 500 },

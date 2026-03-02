@@ -41,8 +41,19 @@ export async function POST(
   }
 
   if (!reminder.sharedToken) {
-    reminder.sharedToken = crypto.randomUUID();
-    await reminder.save();
+    try {
+      reminder.sharedToken = crypto.randomUUID();
+      await reminder.save();
+    } catch (saveError) {
+      // Handle potential race condition where another request created the token
+      const existingReminder = await Reminder.findOne({
+        where: { id, userId: user.id },
+      });
+      if (!existingReminder?.sharedToken) {
+        throw saveError;
+      }
+      reminder.sharedToken = existingReminder.sharedToken;
+    }
   }
 
   const sharePath = `/shared/${reminder.sharedToken}`;

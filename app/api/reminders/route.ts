@@ -13,7 +13,6 @@ type CreateReminderBody = {
 };
 
 export async function GET(): Promise<NextResponse> {
-  await initDatabase();
 
   const user = await getCurrentUser();
   if (!user) {
@@ -31,7 +30,6 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  await initDatabase();
 
   const user = await getCurrentUser();
   if (!user) {
@@ -39,8 +37,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const body = (await request.json()) as CreateReminderBody;
-  const title = typeof body.title === "string" ? body.title.trim() : "";
-  const note = typeof body.note === "string" ? body.note.trim() : "";
+  const title = typeof body.title === "string" ? body.title.trim().replace(/[<>]/g, "") : "";
+  const note = typeof body.note === "string" ? body.note.trim().replace(/[<>]/g, "") : "";
 
   if (title.length < 1 || title.length > 160) {
     return NextResponse.json(
@@ -57,7 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const parsedDate = parseOptionalDate(body.remindAt);
-  if (parsedDate === "invalid") {
+  if (parsedDate === "invalid" || parsedDate === "missing") {
     return NextResponse.json(
       { error: "Invalid reminder date." },
       { status: 400 },
@@ -68,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     userId: user.id,
     title,
     note,
-    remindAt: parsedDate === "missing" ? null : parsedDate,
+    remindAt: parsedDate,
   });
 
   return NextResponse.json(

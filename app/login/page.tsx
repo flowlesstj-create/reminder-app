@@ -5,7 +5,12 @@ import { getCurrentUser } from "@/lib/auth";
 export const runtime = "nodejs";
 
 export default async function LoginPage() {
-  const user = await getCurrentUser();
+  let user = null;
+  try {
+    user = await getCurrentUser();
+  } catch (error) {
+    console.error("Auth check failed:", error);
+  }
 
   if (user) {
     redirect("/dashboard");

@@ -30,7 +30,6 @@ export async function PATCH(
   request: NextRequest,
   { params }: RouteContext,
 ): Promise<NextResponse> {
-  await initDatabase();
 
   const user = await getCurrentUser();
   if (!user) {
@@ -48,7 +47,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Reminder not found." }, { status: 404 });
   }
 
-  const body = (await request.json()) as UpdateReminderBody;
+  let body: UpdateReminderBody;
+  try {
+    body = (await request.json()) as UpdateReminderBody;
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
 
   if (body.title !== undefined) {
     if (typeof body.title !== "string") {
@@ -58,7 +62,7 @@ export async function PATCH(
       );
     }
 
-    const title = body.title.trim();
+    const title = body.title.trim().replace(/[<>]/g, "");
     if (title.length < 1 || title.length > 160) {
       return NextResponse.json(
         { error: "Title must be between 1 and 160 characters." },
@@ -77,7 +81,7 @@ export async function PATCH(
       );
     }
 
-    const note = body.note.trim();
+    const note = body.note.trim().replace(/[<>]/g, "");
     if (note.length > 5000) {
       return NextResponse.json(
         { error: "Note must be 5000 characters or fewer." },
@@ -111,7 +115,12 @@ export async function PATCH(
     reminder.isCompleted = Boolean(body.isCompleted);
   }
 
-  await reminder.save();
+  try {
+    await reminder.save();
+  } catch (error) {
+    console.error("Failed to save reminder", error);
+    return NextResponse.json({ error: "Unable to save reminder." }, { status: 500 });
+  }
 
   return NextResponse.json({
     reminder: serializeReminder(reminder),
@@ -122,7 +131,6 @@ export async function DELETE(
   _request: NextRequest,
   { params }: RouteContext,
 ): Promise<NextResponse> {
-  await initDatabase();
 
   const user = await getCurrentUser();
   if (!user) {
@@ -135,7 +143,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid reminder id." }, { status: 400 });
   }
 
-  const deleted = await Reminder.destroy({ where: { id, userId: user.id } });
+  let deleted: number;
+  try {
+    deleted = await Reminder.destroy({ where: { id, userId: user.id } });
+  } catch (error) {
+    console.error("Failed to delete reminder", error);
+    return NextResponse.json({ error: "Unable to delete reminder." }, { status: 500 });
+  }
   if (!deleted) {
     return NextResponse.json({ error: "Reminder not found." }, { status: 404 });
   }

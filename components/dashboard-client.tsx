@@ -108,21 +108,16 @@ export function DashboardClient({
   function updateReminderInState(
     id: number,
     patch: Partial<ReminderDto>,
-  ): ReminderDto | undefined {
-    let updatedReminder: ReminderDto | undefined;
-
+  ): void {
     setReminders((current) =>
       current.map((item) => {
         if (item.id !== id) {
           return item;
         }
 
-        updatedReminder = { ...item, ...patch };
-        return updatedReminder;
+        return { ...item, ...patch };
       }),
     );
-
-    return updatedReminder;
   }
 
   async function saveReminder(id: number) {

@@ -7,9 +7,15 @@ import { serializeReminder } from "@/lib/reminders";
 export const runtime = "nodejs";
 
 export default async function DashboardPage() {
-  await initDatabase();
 
-  const user = await getCurrentUser();
+  let user: Awaited<ReturnType<typeof getCurrentUser>>;
+  try {
+    user = await getCurrentUser();
+  } catch (error) {
+    console.error("Failed to get current user:", error);
+    redirect("/login");
+  }
+
   if (!user) {
     redirect("/login");
   }
