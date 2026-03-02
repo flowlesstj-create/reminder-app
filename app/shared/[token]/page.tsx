@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Reminder, User, initDatabase } from "@/lib/db";
+import { Reminder, User } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -9,7 +9,6 @@ type SharedPageProps = {
 };
 
 export default async function SharedReminderPage({ params }: SharedPageProps) {
-  await initDatabase();
 
   const { token } = await params;
 
@@ -18,7 +17,12 @@ export default async function SharedReminderPage({ params }: SharedPageProps) {
     notFound();
   }
 
-  const owner = await User.findByPk(reminder.userId);
+  let owner: User | null = null;
+  try {
+    owner = await User.findByPk(reminder.userId);
+  } catch (error) {
+    console.error("Failed to fetch reminder owner", error);
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-4">
