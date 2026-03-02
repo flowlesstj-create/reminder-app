@@ -17,7 +17,6 @@ type SignupBody = {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    await initDatabase();
 
     const body = (await request.json()) as SignupBody;
     const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -49,9 +48,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
+      // Use generic error message to prevent user enumeration attacks
       return NextResponse.json(
-        { error: "An account with this email already exists." },
-        { status: 409 },
+        { error: "Unable to create account right now." },
+        { status: 400 },
       );
     }
 
