@@ -2,18 +2,19 @@
 
 A full reminder app with:
 
-- Account creation and login
-- Session-based auth (HTTP-only cookie)
+- Account creation and login with rate limiting
+- Session-based auth (HTTP-only cookie) with CSRF protection
 - Dashboard to create, edit, complete, and delete reminders
 - Notes and optional reminder date/time
 - Share reminder by public link
+- Security-hardened API endpoints
 
 ## Tech Stack
 
 - Next.js (App Router)
 - TypeScript
 - Sequelize ORM
-- SQLite (`data/app.sqlite`)
+- SQLite (`data/app.sqlite`) with proper connection management
 - Tailwind CSS
 
 ## Run Locally
@@ -48,4 +49,6 @@ Open `http://localhost:3000`.
 
 - SQLite DB file is stored at `data/app.sqlite`.
 - Session tokens are persisted in DB table `sessions`.
-- Passwords are hashed with `bcryptjs`.
+- Passwords are hashed with `bcryptjs` (kept up-to-date).
+- Database indexes optimized for authentication and reminder queries.
+- Rate limiting implemented on authentication endpoints to prevent abuse.
