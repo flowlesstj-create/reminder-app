@@ -5,7 +5,13 @@ import { getCurrentUser } from "@/lib/auth";
 export const runtime = "nodejs";
 
 export default async function SignupPage() {
-  const user = await getCurrentUser();
+  let user = null;
+  try {
+    user = await getCurrentUser();
+  } catch (error) {
+    console.error("Failed to fetch current user:", error);
+    // In case of auth failure, treat as unauthenticated
+  }
 
   if (user) {
     redirect("/dashboard");
