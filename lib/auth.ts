@@ -77,7 +77,7 @@ export function setSessionCookie(
     value: token,
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     path: "/",
     expires: expiresAt,
   });
@@ -89,7 +89,7 @@ export function clearSessionCookie(response: NextResponse): void {
     value: "",
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     path: "/",
     expires: new Date(0),
   });
