@@ -10,6 +10,29 @@ type AuthFormProps = {
   mode: AuthMode;
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+function validateEmail(email: string): string | null {
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return "Please enter a valid email address.";
+  }
+  return null;
+}
+
+function validatePassword(password: string, isSignup: boolean): string | null {
+  if (!password) {
+    return "Password is required.";
+  }
+  if (isSignup && !PASSWORD_REGEX.test(password)) {
+    return "Password must be at least 8 characters with uppercase, lowercase, and number.";
+  }
+  if (password.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
+  return null;
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -23,6 +46,20 @@ export function AuthForm({ mode }: AuthFormProps) {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setError(emailError);
+      setLoading(false);
+      return;
+    }
+
+    const passwordError = validatePassword(password, isSignup);
+    if (passwordError) {
+      setError(passwordError);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -53,7 +90,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       router.push("/dashboard");
       router.refresh();
-    } catch (requestError) {
+    } catch (requestError: unknown) {
       console.error(requestError);
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -108,6 +145,8 @@ export function AuthForm({ mode }: AuthFormProps) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete={isSignup ? "new-password" : "current-password"}
+            minLength={8}
+            pattern={isSignup ? "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}" : undefined}
             required
           />
         </label>
